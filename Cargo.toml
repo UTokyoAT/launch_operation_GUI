@@ -1,0 +1,6 @@
+[package]
+name = "launch_operation_GUI"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
