@@ -5,7 +5,7 @@ pub trait Sendable {
     ///バイナリから元のデータを復元する
     fn deserialize(bytes: &Vec<u8>) -> Self;
     ///シリアライズするのに必要なバイト数
-    fn serialized_size(&self) -> usize;
+    fn serialized_size() -> usize;
 }
 
 ///データを送信する型に実装するトレイト
