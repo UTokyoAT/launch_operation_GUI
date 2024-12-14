@@ -1,3 +1,4 @@
+use launch_operation_GUI::gui::test;
 fn main() {
-    println!("Hello, world!");
+    test::view_test();
 }
