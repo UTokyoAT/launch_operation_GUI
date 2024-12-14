@@ -77,12 +77,11 @@ impl<TCommand : Clone + 'static + std::marker::Send + std::fmt::Debug, TLog : Cl
     }
 }
 
-pub mod test {
+pub mod test_manual {
     use super::GUIComponent;
-
     #[derive(Clone,Debug)]
-    struct TestData {
-        data : String
+    pub struct TestData {
+        pub data : String
     }
 
     pub fn view_test() {
@@ -92,6 +91,33 @@ pub mod test {
         ];
         let mut gui = super::GUI::new(components, Box::new(|c| { println!("{:?}",c)}), Box::new(|| println!("receive")), std::time::Duration::from_secs(1), String::from("test"));
         gui.run().unwrap();
+    }
+}
+
+#[cfg(test)]
+pub mod test {
+    use std::{cell::RefCell, rc::Rc};
+    use super::test_manual::TestData;
+
+    #[test]
+    fn test_send() {
+        let components = vec![];
+        let send_data = Rc::new(RefCell::new(None));
+        let send_data_clone = send_data.clone();
+        let mut gui: super::GUI<TestData, TestData> = super::GUI::new(components, Box::new(move |c| { *send_data_clone.borrow_mut() = Some(c)}), Box::new(|| println!("receive")), std::time::Duration::from_secs(1), String::from("test"));
+        gui.update(super::Message::SendCommand(TestData { data: String::from("test") }));
+        assert_eq!(send_data.borrow().as_ref().unwrap().data, "test");
+    }
+
+    #[test]
+    fn test_receive() {
+        let components = vec![];
+        let receive_count = Rc::new(RefCell::new(0));
+        let receive_count_clone = receive_count.clone();
+        let mut gui: super::GUI<TestData, TestData> = super::GUI::new(components, Box::new(|_| {}), Box::new(move || { *receive_count_clone.borrow_mut() += 1; }), std::time::Duration::from_secs(1), String::from("test"));
+        gui.update(super::Message::Tick);
+        gui.update(super::Message::Tick);
+        assert_eq!(*receive_count.borrow(), 2);
     }
 }
 

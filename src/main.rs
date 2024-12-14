@@ -1,4 +1,4 @@
-use launch_operation_GUI::gui::test;
+use launch_operation_GUI::gui::test_manual;
 fn main() {
-    test::view_test();
+    test_manual::view_test();
 }
