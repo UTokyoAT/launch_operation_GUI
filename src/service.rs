@@ -27,14 +27,11 @@ impl<ESender : Debug,EReceiver : Debug,TSender : Sender<ESender>,TReceiver : Rec
         }
     }
 
-    pub fn start_receive(&mut self,interval : Duration) {
-        loop {
-            let result = self.receiver.try_receive::<TReceiveData>();
-            match result {
-                Ok(x) => (self.listener)(x),
-                Err(e) => (self.on_receiver_error)(e)
-            }
-            thread::sleep(interval);
+    pub fn try_receive(&mut self) {
+        let result = self.receiver.try_receive::<TReceiveData>();
+        match result {
+            Ok(x) => (self.listener)(x),
+            Err(e) => (self.on_receiver_error)(e)
         }
     }
 }
@@ -119,41 +116,35 @@ mod test {
 
     #[test]
     fn receive_ok() {
-        let (ok_tx,ok_rx) = mpsc::channel();
-        let (err_tx,err_rx) = mpsc::channel();
-        thread::spawn(move || {
-            let sender = TestSender{ sended :None};
-            let receiver_ok = TestReceiver{ err : false };
-            let listener = Box::new( move |x : TestSendable| ok_tx.send(x).unwrap());
-            let on_sender_error = Box::new(|_| return);
-            let on_receiver_error = Box::new(move |e| err_tx.send(e).unwrap());
-            let mut service = Service::new(sender,receiver_ok,listener,on_sender_error,on_receiver_error);
-            service.start_receive(Duration::from_micros(1));
-        });
-        thread::sleep(Duration::from_millis(10));
-        let received = ok_rx.recv().unwrap();
-        assert_eq!(received,TestSendable{data : 0});
-        let error = err_rx.try_recv();
-        assert_eq!(error,Err(mpsc::TryRecvError::Empty));
+        let receive_error = Rc::new(RefCell::new(false));
+        let receive_error2 = Rc::clone(&receive_error);
+        let received = Rc::new(RefCell::new(None));
+        let received2 = Rc::clone(&received);
+        let sender = TestSender{ sended :None};
+        let receiver_ok = TestReceiver{ err : false };
+        let listener = Box::new( move |x : TestSendable| *received2.borrow_mut() = Some(x));
+        let on_sender_error = Box::new(|_| return);
+        let on_receiver_error = Box::new(move |_| *receive_error2.borrow_mut() = true);
+        let mut service = Service::new(sender,receiver_ok,listener,on_sender_error,on_receiver_error);
+        service.try_receive();
+        assert_eq!(*received.borrow(),Some(TestSendable{data : 0}));
+        assert_eq!(*receive_error.borrow(),false);
     }
 
     #[test]
     fn receive_error() {
-        let (ok_tx, ok_rx) = mpsc::channel();
-        let (err_tx,err_rx) = mpsc::channel();
-        thread::spawn(move || {
-            let sender = TestSender{ sended :None};
-            let receiver_ok = TestReceiver{ err : true };
-            let listener = Box::new( move |x : TestSendable| ok_tx.send(x).unwrap());
-            let on_sender_error = Box::new(|_| return);
-            let on_receiver_error = Box::new(move |e| err_tx.send(e).unwrap());
-            let mut service = Service::new(sender,receiver_ok,listener,on_sender_error,on_receiver_error);
-            service.start_receive(Duration::from_micros(1));
-        });
-        thread::sleep(Duration::from_millis(10));
-        let received = ok_rx.try_recv();
-        assert_eq!(received,Err(mpsc::TryRecvError::Empty));
-        let error = err_rx.try_recv();
-        assert_eq!(error,Ok(()));
+        let receive_error = Rc::new(RefCell::new(false));
+        let receive_error2 = Rc::clone(&receive_error);
+        let received = Rc::new(RefCell::new(None));
+        let received2 = Rc::clone(&received);
+        let sender = TestSender{ sended :None};
+        let receiver_err = TestReceiver{ err : true };
+        let listener = Box::new( move |x : TestSendable| *received2.borrow_mut() = Some(x));
+        let on_sender_error = Box::new(|_| return);
+        let on_receiver_error = Box::new(move |_| *receive_error2.borrow_mut() = true);
+        let mut service = Service::new(sender,receiver_err,listener,on_sender_error,on_receiver_error);
+        service.try_receive();
+        assert_eq!(*received.borrow(), None);
+        assert_eq!(*receive_error.borrow(), true);
     }
 }
