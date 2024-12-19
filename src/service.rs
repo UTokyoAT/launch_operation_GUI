@@ -1,15 +1,15 @@
 use crate::traits::{Sendable,Sender,Receiver};
-use std::{thread,time::Duration,fmt::Debug};
+use std::fmt::Debug;
 pub struct Service<ESender : Debug, EReceiver : Debug,TSender : Sender<ESender>,TReceiver : Receiver<EReceiver>,TReceiveData : Sendable> {
     sender : TSender,
     receiver : TReceiver,
-    listener : Box<dyn FnMut(TReceiveData)>,
-    on_sender_error : Box<dyn FnMut(ESender)>,
-    on_receiver_error : Box<dyn FnMut(EReceiver)>
+    listener : Box<dyn FnMut(&TReceiveData)>,
+    on_sender_error : Box<dyn FnMut(&ESender)>,
+    on_receiver_error : Box<dyn FnMut(&EReceiver)>
 }
 
 impl<ESender : Debug,EReceiver : Debug,TSender : Sender<ESender>,TReceiver : Receiver<EReceiver>,TReceiveData : Sendable> Service<ESender,EReceiver,TSender,TReceiver,TReceiveData> {
-    pub fn new(sender : TSender, receiver : TReceiver, listener : Box<dyn FnMut(TReceiveData)>, on_sender_error : Box<dyn FnMut(ESender)>, on_receiver_error : Box<dyn FnMut(EReceiver)>)
+    pub fn new(sender : TSender, receiver : TReceiver, listener : Box<dyn FnMut(&TReceiveData)>, on_sender_error : Box<dyn FnMut(&ESender)>, on_receiver_error : Box<dyn FnMut(&EReceiver)>)
         -> Service<ESender,EReceiver,TSender,TReceiver,TReceiveData> {
         Service{
             sender,
@@ -20,25 +20,27 @@ impl<ESender : Debug,EReceiver : Debug,TSender : Sender<ESender>,TReceiver : Rec
         }
     }
 
-    pub fn send<T : Sendable>(&mut self, data : T) {
+    pub fn send<T : Sendable>(&mut self, data : T) -> Result<(),ESender> {
         let result = self.sender.send(data);
-        if let Err(e) = result {
+        if let Err(e) = &result {
             (self.on_sender_error)(e);
         }
+        result
     }
 
-    pub fn try_receive(&mut self) {
+    pub fn try_receive(&mut self) -> Result<TReceiveData, EReceiver> {
         let result = self.receiver.try_receive::<TReceiveData>();
-        match result {
+        match &result {
             Ok(x) => (self.listener)(x),
             Err(e) => (self.on_receiver_error)(e)
         }
+        result
     }
 }
 
 #[cfg(test)]
 mod test {
-    use std::{cell::RefCell, rc::Rc, sync::mpsc, thread, time::Duration};
+    use std::{cell::RefCell, rc::Rc};
 
     use crate::traits::{Receiver, Sendable, Sender};
 
@@ -77,7 +79,7 @@ mod test {
         }
     }
 
-    #[derive(PartialEq,Debug)]
+    #[derive(PartialEq,Debug,Clone)]
     struct TestSendable {
         data : u8
     }
@@ -101,16 +103,18 @@ mod test {
         let send_error = Rc::new(RefCell::new(false));
         let sender = TestSender{ sended : None};
         let receiver = TestReceiver{ err : false };
-        let listener = Box::new(|_ : TestSendable| return);
+        let listener = Box::new(|_ : &TestSendable| return);
         let send_error2 = Rc::clone(&send_error);
-        let on_sender_error = Box::new(move |_| { *send_error2.borrow_mut() = true; });
-        let on_receiver_error = Box::new(|_| return);
+        let on_sender_error: Box<dyn FnMut(&())> = Box::new(move |_| { *send_error2.borrow_mut() = true; });
+        let on_receiver_error: Box<dyn FnMut(&())> = Box::new(|_| return);
 
         let mut service = Service::new(sender,receiver,listener,on_sender_error,on_receiver_error);
-        service.send(TestSendable{data : 1});
+        let result = service.send(TestSendable{data : 1});
+        assert_eq!(result, Ok(()));
         assert_eq!(service.sender.sended, Some(vec![1]));
         assert!(!*send_error.borrow());
-        service.send(TestSendable{data : 1});
+        let result2 = service.send(TestSendable{data : 1});
+        assert_eq!(result2, Err(()));
         assert!(*send_error.borrow());
     }
 
@@ -122,11 +126,12 @@ mod test {
         let received2 = Rc::clone(&received);
         let sender = TestSender{ sended :None};
         let receiver_ok = TestReceiver{ err : false };
-        let listener = Box::new( move |x : TestSendable| *received2.borrow_mut() = Some(x));
-        let on_sender_error = Box::new(|_| return);
-        let on_receiver_error = Box::new(move |_| *receive_error2.borrow_mut() = true);
+        let listener = Box::new( move |x : &TestSendable| *received2.borrow_mut() = Some(x.clone()));
+        let on_sender_error: Box<dyn FnMut(&())> = Box::new(|_| return);
+        let on_receiver_error: Box<dyn FnMut(&())> = Box::new(move |_| *receive_error2.borrow_mut() = true);
         let mut service = Service::new(sender,receiver_ok,listener,on_sender_error,on_receiver_error);
-        service.try_receive();
+        let result = service.try_receive();
+        assert_eq!(result,Ok(TestSendable{data : 0}));
         assert_eq!(*received.borrow(),Some(TestSendable{data : 0}));
         assert_eq!(*receive_error.borrow(),false);
     }
@@ -139,11 +144,12 @@ mod test {
         let received2 = Rc::clone(&received);
         let sender = TestSender{ sended :None};
         let receiver_err = TestReceiver{ err : true };
-        let listener = Box::new( move |x : TestSendable| *received2.borrow_mut() = Some(x));
-        let on_sender_error = Box::new(|_| return);
-        let on_receiver_error = Box::new(move |_| *receive_error2.borrow_mut() = true);
+        let listener = Box::new( move |x : &TestSendable| *received2.borrow_mut() = Some(x.clone()));
+        let on_sender_error: Box<dyn FnMut(&())> = Box::new(|_| return);
+        let on_receiver_error: Box<dyn FnMut(&())> = Box::new(move |_| *receive_error2.borrow_mut() = true);
         let mut service = Service::new(sender,receiver_err,listener,on_sender_error,on_receiver_error);
-        service.try_receive();
+        let result = service.try_receive();
+        assert_eq!(result,Err(()));
         assert_eq!(*received.borrow(), None);
         assert_eq!(*receive_error.borrow(), true);
     }
