@@ -1,4 +1,4 @@
-use launch_operation_GUI::gui::test_manual;
+use launch_operation_GUI::integration_test::integration_test;
 fn main() {
-    test_manual::view_test();
+    integration_test();
 }
