@@ -2,6 +2,8 @@ use crate::traits::{Receiver,Sender};
 use std::io::{Error};
 use serialport;
 use std::time::Duration;
+use log;
+use std::fmt::Debug;
 
 pub struct SerialSender {
     port_name : String,
@@ -20,9 +22,11 @@ impl SerialSender {
 }
 
 impl Sender<Error> for SerialSender {
-    fn send<T : crate::traits::Sendable>(&mut self, data: T) -> Result<(), Error> {
+    fn send<T : crate::traits::Sendable + Debug>(&mut self, data: T) -> Result<(), Error> {
         let mut port = serialport::new(&self.port_name,self.baut_rate).timeout(self.timeout).open()?;
+        log::info!("send data : {:?}",data);
         let output = data.serialize();
+        log::info!("send data serialized : {:?}",output);
         port.write(&output)?;
         Ok(())
     }
@@ -45,11 +49,13 @@ impl SerialReceiver {
 }
 
 impl Receiver<Error> for SerialReceiver {
-    fn try_receive<T : crate::traits::Sendable>(&mut self) -> Result<T, Error> {
+    fn try_receive<T : crate::traits::Sendable + Debug>(&mut self) -> Result<T, Error> {
         let mut port = serialport::new(&self.port_name,self.baut_rate).timeout(self.timeout).open()?;
         let mut buf : Vec<u8> = vec![0; T::serialized_size()];
         port.read(buf.as_mut_slice())?;
+        log::info!("receive data serialized : {:?}",buf);
         let data = T::deserialize(&buf);
+        log::info!("receive data : {:?}",data);
         Ok(data)
     }
 }
@@ -59,7 +65,7 @@ mod test {
     use crate::traits::{Sendable, Sender,Receiver};
 
     use super::{SerialReceiver, SerialSender};
-
+    #[derive(Debug)]
     struct TestData {
         x : u8
     }

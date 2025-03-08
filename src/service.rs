@@ -14,7 +14,7 @@ impl<ESender : Debug, TSender : Sender<ESender>> SendService<ESender,TSender> {
         }
     }
 
-    pub fn send<T : Sendable>(&mut self, data : T) -> Result<(),ESender> {
+    pub fn send<T : Sendable + Debug>(&mut self, data : T) -> Result<(),ESender> {
         let result = self.sender.send(data);
         if let Err(e) = &result {
             (self.on_sender_error)(e);
@@ -23,13 +23,13 @@ impl<ESender : Debug, TSender : Sender<ESender>> SendService<ESender,TSender> {
     }
 }
 
-pub struct ReceiveService<EReceiver : Debug, TReceiver : Receiver<EReceiver>, TReceiveData : Sendable> {
+pub struct ReceiveService<EReceiver : Debug, TReceiver : Receiver<EReceiver>, TReceiveData : Sendable + Debug> {
     receiver : TReceiver,
     listener : Box<dyn FnMut(&TReceiveData)>,
     on_receiver_error : Box<dyn FnMut(&EReceiver)>
 }
 
-impl<EReceiver : Debug, TReceiver : Receiver<EReceiver>, TReceiveData : Sendable> ReceiveService<EReceiver,TReceiver,TReceiveData> {
+impl<EReceiver : Debug, TReceiver : Receiver<EReceiver>, TReceiveData : Sendable + Debug> ReceiveService<EReceiver,TReceiver,TReceiveData> {
     pub fn new(receiver : TReceiver, listener : Box<dyn FnMut(&TReceiveData)>, on_receiver_error : Box<dyn FnMut(&EReceiver)>) -> ReceiveService<EReceiver,TReceiver,TReceiveData> {
         ReceiveService {
             receiver,

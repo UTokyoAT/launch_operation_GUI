@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 ///通信によって送受信される型に実装するトレイト
 pub trait Sendable {
     ///バイナリに変換する
@@ -10,11 +11,11 @@ pub trait Sendable {
 
 ///データを送信する型に実装するトレイト
 pub trait Sender<E> {
-    fn send<T : Sendable>(&mut self, data: T) -> Result<(), E>;
+    fn send<T : Sendable + Debug>(&mut self, data: T) -> Result<(), E>;
 }
 
 ///データを受信する型に実装するトレイト
 pub trait Receiver<E> {
     ///データを受信していればそのデータを，していなければエラーを返す
-    fn try_receive<T : Sendable>(&mut self) -> Result<T, E>;
+    fn try_receive<T : Sendable + Debug>(&mut self) -> Result<T, E>;
 }
