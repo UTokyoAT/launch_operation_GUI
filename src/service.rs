@@ -1,22 +1,16 @@
 use crate::traits::{Sendable,Sender,Receiver};
 use std::fmt::Debug;
-pub struct Service<ESender : Debug, EReceiver : Debug,TSender : Sender<ESender>,TReceiver : Receiver<EReceiver>,TReceiveData : Sendable> {
+
+pub struct SendService<ESender : Debug, TSender : Sender<ESender>> {
     sender : TSender,
-    receiver : TReceiver,
-    listener : Box<dyn FnMut(&TReceiveData)>,
-    on_sender_error : Box<dyn FnMut(&ESender)>,
-    on_receiver_error : Box<dyn FnMut(&EReceiver)>
+    on_sender_error : Box<dyn FnMut(&ESender)>
 }
 
-impl<ESender : Debug,EReceiver : Debug,TSender : Sender<ESender>,TReceiver : Receiver<EReceiver>,TReceiveData : Sendable> Service<ESender,EReceiver,TSender,TReceiver,TReceiveData> {
-    pub fn new(sender : TSender, receiver : TReceiver, listener : Box<dyn FnMut(&TReceiveData)>, on_sender_error : Box<dyn FnMut(&ESender)>, on_receiver_error : Box<dyn FnMut(&EReceiver)>)
-        -> Service<ESender,EReceiver,TSender,TReceiver,TReceiveData> {
-        Service{
+impl<ESender : Debug, TSender : Sender<ESender>> SendService<ESender,TSender> {
+    pub fn new(sender : TSender, on_sender_error : Box<dyn FnMut(&ESender)>) -> SendService<ESender,TSender> {
+        SendService {
             sender,
-            receiver,
-            listener,
-            on_sender_error,
-            on_receiver_error
+            on_sender_error
         }
     }
 
@@ -26,6 +20,22 @@ impl<ESender : Debug,EReceiver : Debug,TSender : Sender<ESender>,TReceiver : Rec
             (self.on_sender_error)(e);
         }
         result
+    }
+}
+
+pub struct ReceiveService<EReceiver : Debug, TReceiver : Receiver<EReceiver>, TReceiveData : Sendable> {
+    receiver : TReceiver,
+    listener : Box<dyn FnMut(&TReceiveData)>,
+    on_receiver_error : Box<dyn FnMut(&EReceiver)>
+}
+
+impl<EReceiver : Debug, TReceiver : Receiver<EReceiver>, TReceiveData : Sendable> ReceiveService<EReceiver,TReceiver,TReceiveData> {
+    pub fn new(receiver : TReceiver, listener : Box<dyn FnMut(&TReceiveData)>, on_receiver_error : Box<dyn FnMut(&EReceiver)>) -> ReceiveService<EReceiver,TReceiver,TReceiveData> {
+        ReceiveService {
+            receiver,
+            listener,
+            on_receiver_error
+        }
     }
 
     pub fn try_receive(&mut self) -> Result<TReceiveData, EReceiver> {
@@ -44,7 +54,7 @@ mod test {
 
     use crate::traits::{Receiver, Sendable, Sender};
 
-    use super::Service;
+    use super::{ReceiveService, SendService};
 
     #[derive(Clone)]
     struct TestSender {
@@ -102,13 +112,10 @@ mod test {
     fn send() {
         let send_error = Rc::new(RefCell::new(false));
         let sender = TestSender{ sended : None};
-        let receiver = TestReceiver{ err : false };
-        let listener = Box::new(|_ : &TestSendable| return);
         let send_error2 = Rc::clone(&send_error);
         let on_sender_error: Box<dyn FnMut(&())> = Box::new(move |_| { *send_error2.borrow_mut() = true; });
-        let on_receiver_error: Box<dyn FnMut(&())> = Box::new(|_| return);
 
-        let mut service = Service::new(sender,receiver,listener,on_sender_error,on_receiver_error);
+        let mut service = SendService::new(sender,on_sender_error);
         let result = service.send(TestSendable{data : 1});
         assert_eq!(result, Ok(()));
         assert_eq!(service.sender.sended, Some(vec![1]));
@@ -124,12 +131,10 @@ mod test {
         let receive_error2 = Rc::clone(&receive_error);
         let received = Rc::new(RefCell::new(None));
         let received2 = Rc::clone(&received);
-        let sender = TestSender{ sended :None};
         let receiver_ok = TestReceiver{ err : false };
         let listener = Box::new( move |x : &TestSendable| *received2.borrow_mut() = Some(x.clone()));
-        let on_sender_error: Box<dyn FnMut(&())> = Box::new(|_| return);
         let on_receiver_error: Box<dyn FnMut(&())> = Box::new(move |_| *receive_error2.borrow_mut() = true);
-        let mut service = Service::new(sender,receiver_ok,listener,on_sender_error,on_receiver_error);
+        let mut service = ReceiveService::new(receiver_ok,listener,on_receiver_error);
         let result = service.try_receive();
         assert_eq!(result,Ok(TestSendable{data : 0}));
         assert_eq!(*received.borrow(),Some(TestSendable{data : 0}));
@@ -142,12 +147,10 @@ mod test {
         let receive_error2 = Rc::clone(&receive_error);
         let received = Rc::new(RefCell::new(None));
         let received2 = Rc::clone(&received);
-        let sender = TestSender{ sended :None};
         let receiver_err = TestReceiver{ err : true };
         let listener = Box::new( move |x : &TestSendable| *received2.borrow_mut() = Some(x.clone()));
-        let on_sender_error: Box<dyn FnMut(&())> = Box::new(|_| return);
         let on_receiver_error: Box<dyn FnMut(&())> = Box::new(move |_| *receive_error2.borrow_mut() = true);
-        let mut service = Service::new(sender,receiver_err,listener,on_sender_error,on_receiver_error);
+        let mut service = ReceiveService::new(receiver_err,listener,on_receiver_error);
         let result = service.try_receive();
         assert_eq!(result,Err(()));
         assert_eq!(*received.borrow(), None);
