@@ -55,7 +55,6 @@ pub fn integration_test() {
     let listener: Box<dyn FnMut(&TestData)> = Box::new(|data: &TestData| {
         println!("lister : {:?}", data);
     });
-    // let mut service = Service::new(sender, receiver, listener, Box::new(|e| print!("{:?}",e)), Box::new(|e| { print!("{:?}",e)}));
     let mut send_service = SendService::new(sender, Box::new(|e| println!("sendError : {:?}", e)));
     let mut receive_service = ReceiveService::new(
         receiver,
