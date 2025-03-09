@@ -1,6 +1,6 @@
 use crate::{
-    gui,
-    gui::GUIComponent,
+    gui::gui,
+    gui::gui::GUIComponent,
     serial_communication::{SerialReceiver, SerialSender},
     service::{ReceiveService, SendService},
     traits::Sendable,

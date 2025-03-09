@@ -164,7 +164,7 @@ pub mod test_manual {
 
 #[cfg(test)]
 pub mod test {
-    use crate::gui::GUIComponent;
+    use crate::gui::gui::GUIComponent;
     use std::{cell::RefCell, rc::Rc};
 
     use super::test_manual::TestData;
