@@ -1,20 +1,20 @@
-use std::io::{Write,BufWriter,BufRead,BufReader};
-use std::fs::{self,File};
+use std::fs::{self, File};
+use std::io::{BufRead, BufReader, BufWriter, Write};
 
 pub trait CSVWritable {
     fn to_csv_row(&self) -> Vec<String>;
 }
 pub struct CSVWriter {
-    writer : BufWriter<File>,
-    columns : Vec<String>,
+    writer: BufWriter<File>,
+    columns: Vec<String>,
 }
 
 impl CSVWriter {
-    pub fn new(file_path : &str, columns : Vec<String>) -> Self {
+    pub fn new(file_path: &str, columns: Vec<String>) -> Self {
         let file = File::create(file_path).unwrap();
         let mut body = CSVWriter {
-            writer : BufWriter::new(file),
-            columns
+            writer: BufWriter::new(file),
+            columns,
         };
         body.write_header();
         body
@@ -26,7 +26,7 @@ impl CSVWriter {
         self.writer.write_all(b"\n").unwrap();
     }
 
-    pub fn write_row<T : CSVWritable>(&mut self, row : &T) {
+    pub fn write_row<T: CSVWritable>(&mut self, row: &T) {
         let row = row.to_csv_row();
         assert!(row.len() == self.columns.len());
         let row = row.join(",");
@@ -35,8 +35,8 @@ impl CSVWriter {
         self.writer.flush().unwrap();
     }
 
-    pub fn get_listener<TReceiveData : CSVWritable>(mut self) -> Box<dyn FnMut(&TReceiveData)> {
-        Box::new(move |data : &TReceiveData| {
+    pub fn get_listener<TReceiveData: CSVWritable>(mut self) -> Box<dyn FnMut(&TReceiveData)> {
+        Box::new(move |data: &TReceiveData| {
             self.write_row(data);
         })
     }
@@ -46,8 +46,8 @@ impl CSVWriter {
 mod tests {
     use super::*;
     struct TestData {
-        data : i32,
-        data2 : i32,
+        data: i32,
+        data2: i32,
     }
 
     impl CSVWritable for TestData {
@@ -61,8 +61,8 @@ mod tests {
         let columns = vec![String::from("data"), String::from("data2")];
         let writer = CSVWriter::new("test.csv", columns);
         let mut listener = writer.get_listener();
-        listener(&TestData { data: 1, data2 : 3 });
-        listener(&TestData { data: 2, data2 : 4 });
+        listener(&TestData { data: 1, data2: 3 });
+        listener(&TestData { data: 2, data2: 4 });
 
         let file = File::open("test.csv").unwrap();
         let reader = BufReader::new(file);
