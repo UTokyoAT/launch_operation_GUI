@@ -146,7 +146,7 @@ pub mod test_manual {
                 },
             },
         ];
-        let mut gui: super::GUI<TestData, TestData, ()> = super::GUI::new(
+        let gui: super::GUI<TestData, TestData, ()> = super::GUI::new(
             components,
             Box::new(|c| println!("{:?}", c)),
             Box::new(|| {

@@ -62,7 +62,7 @@ pub fn integration_test() {
         listener,
         Box::new(|e| println!("ReceiveError{:?}", e)),
     );
-    let mut gui = gui::GUI::new(
+    let gui = gui::GUI::new(
         components,
         Box::new(move |c| send_service.send(c).unwrap()),
         Box::new(move || receive_service.try_receive()),
