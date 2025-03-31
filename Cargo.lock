@@ -1763,6 +1763,7 @@ dependencies = [
  "env_logger",
  "iced",
  "log",
+ "regex",
  "serialport",
 ]
 
