@@ -34,6 +34,22 @@ impl Type {
             _ => None,
         }
     }
+
+    fn bytes(&self) -> usize {
+        match self {
+            Type::Float => 4,
+            Type::Double => 8,
+            Type::I8 => 1,
+            Type::I16 => 2,
+            Type::I32 => 4,
+            Type::I64 => 8,
+            Type::U8 => 1,
+            Type::U16 => 2,
+            Type::U32 => 4,
+            Type::U64 => 8,
+            Type::Bool => 1,
+        }
+    }
 }
 
 fn is_valid_name(name: &str) -> bool {
