@@ -1,6 +1,7 @@
 pub mod csv_writer;
 pub mod gui {
     pub mod gui;
+    pub mod text_view;
 }
 pub mod integration_test;
 pub mod serial_communication;

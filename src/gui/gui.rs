@@ -4,16 +4,21 @@ use iced::widget::{button, container, Column, Row, Text};
 use iced::Subscription;
 use iced::{time, Task};
 
-pub enum GUIComponent<TCommand: Clone, TLog: Clone> {
-    CommandSendButton {
-        label: String,
-        command_to_send: TCommand,
-    },
-    TextView {
-        label: String,
-        new_text: Box<dyn Fn(TLog, &mut String) -> String>,
-        text: String,
-    },
+// pub enum GUIComponent<TCommand: Clone, TLog: Clone> {
+//     CommandSendButton {
+//         label: String,
+//         command_to_send: TCommand,
+//     },
+//     TextView {
+//         label: String,
+//         new_text: Box<dyn Fn(TLog, &mut String) -> String>,
+//         text: String,
+//     },
+// }
+
+pub trait GUIComponent<TCommand, TLog> {
+    fn view(&self) -> Box<dyn iced::Widget<Message<TCommand>>>;
+    fn update(&mut self, log : TLog);
 }
 
 #[derive(Debug, Clone)]
