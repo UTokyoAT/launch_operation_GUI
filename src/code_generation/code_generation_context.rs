@@ -35,3 +35,32 @@ impl CodeGenerationContext {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::code_generation::var_type::VarType;
+
+    #[test]
+    fn test_code_generation_context() {
+        let variable_definitions = vec![
+            VariableDefinition::new("var1", VarType::I8).unwrap(),
+            VariableDefinition::new("var2", VarType::Float).unwrap(),
+            VariableDefinition::new("var3", VarType::I32).unwrap(),
+        ];
+        let data_definition = DataDefinition::new("TestData", variable_definitions).unwrap();
+        let context = CodeGenerationContext::new(data_definition);
+        assert_eq!(context.name, "TestData");
+        assert_eq!(context.total_bytes, 9);
+        assert_eq!(context.variable_information.len(), 3);
+        assert_eq!(context.variable_information[0].name, "var1");
+        assert_eq!(context.variable_information[0].var_type, VarType::I8);
+        assert_eq!(context.variable_information[0].offset_bytes, 0);
+        assert_eq!(context.variable_information[1].name, "var2");
+        assert_eq!(context.variable_information[1].var_type, VarType::Float);
+        assert_eq!(context.variable_information[1].offset_bytes, 1);
+        assert_eq!(context.variable_information[2].name, "var3");
+        assert_eq!(context.variable_information[2].var_type, VarType::I32);
+        assert_eq!(context.variable_information[2].offset_bytes, 5);
+    }
+}

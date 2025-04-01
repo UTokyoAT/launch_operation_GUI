@@ -14,7 +14,7 @@ pub struct VariableDefinition {
 }
 
 impl VariableDefinition {
-    fn new(name: &str, var_type: VarType) -> Option<Self> {
+    pub fn new(name: &str, var_type: VarType) -> Option<Self> {
         if !is_valid_name(name) {
             return None;
         }
@@ -31,7 +31,7 @@ pub struct DataDefinition {
 }
 
 impl DataDefinition {
-    fn new(name: &str, variable_definitions: Vec<VariableDefinition>) -> Option<Self> {
+    pub fn new(name: &str, variable_definitions: Vec<VariableDefinition>) -> Option<Self> {
         if !is_valid_name(name) {
             return None;
         }
