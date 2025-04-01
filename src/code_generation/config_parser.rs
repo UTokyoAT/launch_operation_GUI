@@ -9,8 +9,8 @@ fn is_valid_name(name: &str) -> bool {
 }
 
 pub struct VariableDefinition {
-    name: String,
-    var_type: VarType
+    pub name: String,
+    pub var_type: VarType
 }
 
 impl VariableDefinition {
@@ -26,8 +26,8 @@ impl VariableDefinition {
 }
 
 pub struct DataDefinition {
-    name: String,
-    variable_definitions: Vec<VariableDefinition>,
+    pub name: String,
+    pub variable_definitions: Vec<VariableDefinition>,
 }
 
 impl DataDefinition {

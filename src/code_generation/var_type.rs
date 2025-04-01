@@ -31,7 +31,7 @@ impl VarType {
         }
     }
 
-    fn bytes(&self) -> usize {
+    pub fn bytes(&self) -> usize {
         match self {
             VarType::Float => 4,
             VarType::Double => 8,
