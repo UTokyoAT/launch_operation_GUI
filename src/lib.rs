@@ -4,6 +4,7 @@ pub mod gui {
 }
 pub mod code_generation {
     pub mod config_parser;
+    pub mod var_type;
 }
 pub mod integration_test;
 pub mod serial_communication;

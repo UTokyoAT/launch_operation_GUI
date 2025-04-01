@@ -1,56 +1,7 @@
 use core::panic;
+use crate::code_generation::var_type::VarType;
 
 use regex::Regex;
-
-#[derive(Debug,PartialEq)]
-pub enum Type {
-    Float,
-    Double,
-    I8,
-    I16,
-    I32,
-    I64,
-    U8,
-    U16,
-    U32,
-    U64,
-    Bool,
-}
-
-impl Type {
-    fn new(s: &str) -> Option<Self> {
-        match s {
-            "float" => Some(Type::Float),
-            "double" => Some(Type::Double),
-            "i8" => Some(Type::I8),
-            "i16" => Some(Type::I16),
-            "i32" => Some(Type::I32),
-            "i64" => Some(Type::I64),
-            "u8" => Some(Type::U8),
-            "u16" => Some(Type::U16),
-            "u32" => Some(Type::U32),
-            "u64" => Some(Type::U64),
-            "bool" => Some(Type::Bool),
-            _ => None,
-        }
-    }
-
-    fn bytes(&self) -> usize {
-        match self {
-            Type::Float => 4,
-            Type::Double => 8,
-            Type::I8 => 1,
-            Type::I16 => 2,
-            Type::I32 => 4,
-            Type::I64 => 8,
-            Type::U8 => 1,
-            Type::U16 => 2,
-            Type::U32 => 4,
-            Type::U64 => 8,
-            Type::Bool => 1,
-        }
-    }
-}
 
 fn is_valid_name(name: &str) -> bool {
     let re = Regex::new(r"^[a-zA-Z_][a-zA-Z0-9_]*$").unwrap();
@@ -59,11 +10,11 @@ fn is_valid_name(name: &str) -> bool {
 
 pub struct VariableDefinition {
     name: String,
-    var_type: Type
+    var_type: VarType
 }
 
 impl VariableDefinition {
-    fn new(name: &str, var_type: Type) -> Option<Self> {
+    fn new(name: &str, var_type: VarType) -> Option<Self> {
         if !is_valid_name(name) {
             return None;
         }
@@ -91,8 +42,8 @@ impl DataDefinition {
     }
 }
 
-fn parse_type(type_definition: &str) -> Type {
-    Type::new(type_definition).expect(&format!(
+fn parse_type(type_definition: &str) -> VarType {
+    VarType::new(type_definition).expect(&format!(
         "Invalid type definition: {}",
         type_definition
     ))
@@ -158,7 +109,7 @@ mod tests {
         let variable_definition = "i8 x";
         let parsed = parse_variable(variable_definition);
         assert_eq!(parsed.name, "x");
-        assert_eq!(parsed.var_type, Type::I8);
+        assert_eq!(parsed.var_type, VarType::I8);
     }
 
     #[test]
@@ -168,9 +119,9 @@ mod tests {
         assert_eq!(parsed.name, "Data");
         assert_eq!(parsed.variable_definitions.len(), 2);
         assert_eq!(parsed.variable_definitions[0].name, "x");
-        assert_eq!(parsed.variable_definitions[0].var_type, Type::I32);
+        assert_eq!(parsed.variable_definitions[0].var_type, VarType::I32);
         assert_eq!(parsed.variable_definitions[1].name, "y");
-        assert_eq!(parsed.variable_definitions[1].var_type, Type::Float);
+        assert_eq!(parsed.variable_definitions[1].var_type, VarType::Float);
     }
 
     #[test]
