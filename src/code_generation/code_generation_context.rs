@@ -1,14 +1,14 @@
 use crate::code_generation::var_type::VarType;
 use crate::code_generation::config_parser::{DataDefinition, VariableDefinition};
 pub struct VariableInformation {
-    name: String,
-    var_type: VarType,
-    offset_bytes: usize,
+    pub name: String,
+    pub var_type: VarType,
+    pub offset_bytes: usize,
 }
 pub struct CodeGenerationContext {
-    name: String,
-    variable_information: Vec<VariableInformation>,
-    total_bytes: usize,
+    pub name: String,
+    pub variable_information: Vec<VariableInformation>,
+    pub total_bytes: usize,
 }
 
 impl CodeGenerationContext {
