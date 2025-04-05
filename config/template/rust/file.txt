@@ -1,0 +1,35 @@
+use crate::traits::Sendable;
+
+pub struct {{name}} {
+    {% for variable in variables %}
+    {{variable.name}}: {{variable.type}},
+    {% endfor %}
+}
+
+impl Sendable for {{name}} {
+    fn serialize(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        {% for variable in variables %}
+        bytes.extend_from_slice(&self.{{variable.name}}.to_le_bytes());
+        {% endfor %}
+        bytes
+    }
+
+    fn deserialize(bytes: &Vec<u8>) -> Self {
+        {% for variable in variables %}
+        let {{variable.name}} = {{variable.type}}::from_le_bytes(
+            bytes[{{variable.offset}}..{{variable.offset + variable.size}}].try_into().unwrap(),
+        );
+        {% endfor %}
+        {{name}} {
+            {% for variable in variables %}
+            {{variable.name}},
+            {% endfor %}
+        }
+    }
+
+    fn serialized_size() -> usize {
+        {{total_bytes}}
+    }
+}
+
