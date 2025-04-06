@@ -7,7 +7,7 @@ use std::path::Path;
 use crate::code_generation::var_type::VarType;
 
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct TypeToString {
     float_: String,
     double_: String,
@@ -68,7 +68,7 @@ mod tests {
 
     #[test]
     fn test_read_template() {
-        let path = Path::new("config/template/rust/template/template.txt");
+        let path = Path::new("config/template/rust/template.txt");
         let template = read_template(Box::from(path));
         assert!(!template.is_empty());
     }
