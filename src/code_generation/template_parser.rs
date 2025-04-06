@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use serde_json;
 use std::fs::File;
+use std::fs;
 use std::io::BufReader;
 use std::path::Path;
 use crate::code_generation::var_type::VarType;
@@ -45,6 +46,10 @@ impl TypeToString {
     }
 }
 
+pub fn read_template(path: Box<Path>) -> String {
+    std::fs::read_to_string(path).expect("Unable to read file")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -59,5 +64,12 @@ mod tests {
         let var_type_to_string = type_to_string.to_fn();
         assert_eq!(var_type_to_string(VarType::I8), "i8");
         assert_eq!(var_type_to_string(VarType::I16), "i16");
+    }
+
+    #[test]
+    fn test_read_template() {
+        let path = Path::new("config/template/rust/template/template.txt");
+        let template = read_template(Box::from(path));
+        assert!(!template.is_empty());
     }
 }
