@@ -4,8 +4,8 @@ pub mod gui {
 }
 pub mod generated_code {
     pub mod rust {
-        pub mod command;
-        pub mod log;
+        pub mod Command;
+        pub mod Log;
     }
 }
 pub mod integration_test;
