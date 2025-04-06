@@ -18,7 +18,7 @@ impl Sendable for {{name}} {
     fn deserialize(bytes: &Vec<u8>) -> Self {
         {% for variable in variable_information %}
         let {{variable.name}} = {{variable.type}}::from_le_bytes(
-            bytes[{{variable.offset}}..{{variable.offset + variable.size}}].try_into().unwrap(),
+            bytes[{{variable.offset}}..{{variable.offset}} + {{variable.size_bytes}}].try_into().unwrap(),
         );
         {% endfor %}
         {{name}} {

@@ -11,6 +11,7 @@ fn to_minijinja_value(code_generation_context: CodeGenerationContext, var_type_t
             ("name".to_string(), Value::from(info.name)),
             ("var_type".to_string(), Value::from(var_type_to_string(info.var_type))),
             ("offset_bytes".to_string(), Value::from(info.offset_bytes)),
+            ("size_bytes".to_string(), Value::from(info.size_bytes)),
         ]);
         variable_information.push(var_info);
     }
@@ -41,6 +42,7 @@ mod tests {
                 name: "var1".to_string(),
                 var_type: VarType::I8,
                 offset_bytes: 0,
+                size_bytes: 1,
             },
         ];
         CodeGenerationContext {

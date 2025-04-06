@@ -4,6 +4,7 @@ pub struct VariableInformation {
     pub name: String,
     pub var_type: VarType,
     pub offset_bytes: usize,
+    pub size_bytes: usize,
 }
 pub struct CodeGenerationContext {
     pub name: String,
@@ -21,11 +22,13 @@ impl CodeGenerationContext {
         } in data_definition.variable_definitions
         {
             let offset_bytes = total_bytes;
-            total_bytes += var_type.bytes();
+            let size_bytes = var_type.bytes();
+            total_bytes += size_bytes;
             variable_information.push(VariableInformation {
                 name,
                 var_type,
                 offset_bytes,
+                size_bytes
             });
         }
         CodeGenerationContext {
@@ -56,11 +59,14 @@ mod tests {
         assert_eq!(context.variable_information[0].name, "var1");
         assert_eq!(context.variable_information[0].var_type, VarType::I8);
         assert_eq!(context.variable_information[0].offset_bytes, 0);
+        assert_eq!(context.variable_information[0].size_bytes, 1);
         assert_eq!(context.variable_information[1].name, "var2");
         assert_eq!(context.variable_information[1].var_type, VarType::Float);
         assert_eq!(context.variable_information[1].offset_bytes, 1);
+        assert_eq!(context.variable_information[1].size_bytes, 4);
         assert_eq!(context.variable_information[2].name, "var3");
         assert_eq!(context.variable_information[2].var_type, VarType::I32);
         assert_eq!(context.variable_information[2].offset_bytes, 5);
+        assert_eq!(context.variable_information[2].size_bytes, 4);
     }
 }
