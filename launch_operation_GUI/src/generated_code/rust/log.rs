@@ -1,6 +1,6 @@
 use crate::traits::Sendable;
 
-pub struct log {
+pub struct Log {
     
     var1: f32,
     
@@ -8,7 +8,7 @@ pub struct log {
     
 }
 
-impl Sendable for log {
+impl Sendable for Log {
     fn serialize(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
         
@@ -29,7 +29,7 @@ impl Sendable for log {
             bytes[4..4 + 8].try_into().unwrap(),
         );
         
-        log {
+        Log {
             
             var1,
             
@@ -57,7 +57,7 @@ mod tests {
         
         let var2: f64 = rng.random();
         
-        let data = log {
+        let data = Log {
             
             var1,
             
@@ -66,7 +66,7 @@ mod tests {
         };
         let serialized = data.serialize();
         assert_eq!(serialized.len(), 12);
-        let deserialized = log::deserialize(&serialized);
+        let deserialized = Log::deserialize(&serialized);
         
         assert_eq!(data.var1, deserialized.var1);
         

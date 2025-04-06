@@ -2,10 +2,10 @@ use std::path::Path;
 use std::fs;
 use std::fs::File;
 use std::io::BufReader;
-use crate::code_generation::template_parser::{self,TypeToString};
-use crate::code_generation::code_generator;
-use crate::code_generation::config_parser;
-use crate::code_generation::code_generation_context::CodeGenerationContext;
+use crate::template_parser::{self,TypeToString};
+use crate::code_generator;
+use crate::config_parser;
+use crate::code_generation_context::CodeGenerationContext;
 
 
 fn sub_dir(path: &Path) -> Vec<String> {

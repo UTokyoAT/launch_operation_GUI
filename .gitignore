@@ -1,3 +1,4 @@
 launch_operation_GUI/target
+code_generator/target
 .DS_Store
 /src/generated_code

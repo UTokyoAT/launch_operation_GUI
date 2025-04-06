@@ -1,12 +1,12 @@
 use crate::traits::Sendable;
 
-pub struct command {
+pub struct Command {
     
     var1: u8,
     
 }
 
-impl Sendable for command {
+impl Sendable for Command {
     fn serialize(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
         
@@ -21,7 +21,7 @@ impl Sendable for command {
             bytes[0..0 + 1].try_into().unwrap(),
         );
         
-        command {
+        Command {
             
             var1,
             
@@ -45,14 +45,14 @@ mod tests {
         
         let var1: u8 = rng.random();
         
-        let data = command {
+        let data = Command {
             
             var1,
             
         };
         let serialized = data.serialize();
         assert_eq!(serialized.len(), 1);
-        let deserialized = command::deserialize(&serialized);
+        let deserialized = Command::deserialize(&serialized);
         
         assert_eq!(data.var1, deserialized.var1);
         

@@ -4,7 +4,7 @@ use std::fs::File;
 use std::fs;
 use std::io::BufReader;
 use std::path::Path;
-use crate::code_generation::var_type::VarType;
+use crate::var_type::VarType;
 
 
 #[derive(Deserialize, Clone)]
@@ -53,7 +53,7 @@ pub fn read_template(path: Box<Path>) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::code_generation::var_type::VarType;
+    use crate::var_type::VarType;
 
     #[test]
     fn test_read() {

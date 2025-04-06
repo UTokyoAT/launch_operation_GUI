@@ -1,6 +1,6 @@
 use minijinja::{Environment, context, value::Value};
 use std::collections::HashMap;
-use crate::code_generation::var_type::VarType;
+use crate::var_type::VarType;
 
 use super::code_generation_context::{self, CodeGenerationContext};
 
@@ -32,9 +32,9 @@ pub fn render_template(template: &str, var_type_to_string : Box<dyn Fn(VarType) 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::code_generation::var_type::VarType;
-    use crate::code_generation::code_generation_context::VariableInformation;
-    use crate::code_generation::code_generation_context::CodeGenerationContext;
+    use crate::var_type::VarType;
+    use crate::code_generation_context::VariableInformation;
+    use crate::code_generation_context::CodeGenerationContext;
 
     fn code_generation_context() -> CodeGenerationContext {
         let variable_information = vec![

@@ -1,5 +1,5 @@
-use crate::code_generation::var_type::VarType;
-use crate::code_generation::config_parser::{DataDefinition, VariableDefinition};
+use crate::var_type::VarType;
+use crate::config_parser::{DataDefinition, VariableDefinition};
 pub struct VariableInformation {
     pub name: String,
     pub var_type: VarType,
@@ -42,7 +42,7 @@ impl CodeGenerationContext {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::code_generation::var_type::VarType;
+    use crate::var_type::VarType;
 
     #[test]
     fn test_code_generation_context() {

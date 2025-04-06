@@ -1,5 +1,5 @@
 use core::panic;
-use crate::code_generation::var_type::VarType;
+use crate::var_type::VarType;
 
 use regex::Regex;
 
