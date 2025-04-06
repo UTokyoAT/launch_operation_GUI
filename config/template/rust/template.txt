@@ -2,7 +2,7 @@ use crate::traits::Sendable;
 
 pub struct {{name}} {
     {% for variable in variable_information %}
-    {{variable.name}}: {{variable.type}},
+    {{variable.name}}: {{variable.var_type}},
     {% endfor %}
 }
 
@@ -17,8 +17,8 @@ impl Sendable for {{name}} {
 
     fn deserialize(bytes: &Vec<u8>) -> Self {
         {% for variable in variable_information %}
-        let {{variable.name}} = {{variable.type}}::from_le_bytes(
-            bytes[{{variable.offset}}..{{variable.offset}} + {{variable.size_bytes}}].try_into().unwrap(),
+        let {{variable.name}} = {{variable.var_type}}::from_le_bytes(
+            bytes[{{variable.offset_bytes}}..{{variable.offset_bytes}} + {{variable.size_bytes}}].try_into().unwrap(),
         );
         {% endfor %}
         {{name}} {
