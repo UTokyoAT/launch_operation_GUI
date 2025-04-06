@@ -33,3 +33,30 @@ impl Sendable for {{name}} {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::traits::Sendable;
+    use rand::{self, Rng};
+
+    #[test]
+    fn test_reverse() {
+        let mut rng = rand::rng();
+        {% for variable in variable_information %}
+        let {{variable.name}}: {{variable.var_type}} = rng.random();
+        {% endfor %}
+        let data = {{name}} {
+            {% for variable in variable_information %}
+            {{variable.name}},
+            {% endfor %}
+        };
+        let serialized = data.serialize();
+        assert_eq!(serialized.len(), {{total_bytes}});
+        let deserialized = {{name}}::deserialize(&serialized);
+        {% for variable in variable_information %}
+        assert_eq!(data.{{variable.name}}, deserialized.{{variable.name}});
+        {% endfor %}
+
+    }
+}
+
