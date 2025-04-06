@@ -1,0 +1,8 @@
+log {
+    float var1;
+    double var2;
+}
+
+command {
+    u8 var1;
+}

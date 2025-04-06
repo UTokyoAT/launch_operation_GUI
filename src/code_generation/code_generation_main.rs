@@ -33,6 +33,7 @@ pub fn generate(config_path: Box<Path>, output_path: Box<Path>) {
         let template = template_parser::read_template(template_path.into_boxed_path());
         let config = fs::read_to_string(config_path.clone()).expect("Unable to read file");
         let config = config_parser::parse_config(&config);
+        fs::create_dir_all(&language_output_path).expect("Unable to create directory");
         for data_definition in config {
             let output_path = language_output_path.join(data_definition.name.clone());
             let code_generation_context = CodeGenerationContext::new(data_definition);
