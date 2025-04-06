@@ -1,11 +1,10 @@
+use crate::var_type::VarType;
 use serde::Deserialize;
 use serde_json;
-use std::fs::File;
 use std::fs;
+use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
-use crate::var_type::VarType;
-
 
 #[derive(Deserialize, Clone)]
 pub struct TypeToString {

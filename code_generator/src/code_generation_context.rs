@@ -1,5 +1,5 @@
-use crate::var_type::VarType;
 use crate::config_parser::{DataDefinition, VariableDefinition};
+use crate::var_type::VarType;
 pub struct VariableInformation {
     pub name: String,
     pub var_type: VarType,
@@ -16,11 +16,7 @@ impl CodeGenerationContext {
     pub fn new(data_definition: DataDefinition) -> Self {
         let mut total_bytes = 0;
         let mut variable_information = Vec::new();
-        for VariableDefinition {
-            name,
-            var_type,
-        } in data_definition.variable_definitions
-        {
+        for VariableDefinition { name, var_type } in data_definition.variable_definitions {
             let offset_bytes = total_bytes;
             let size_bytes = var_type.bytes();
             total_bytes += size_bytes;
@@ -28,7 +24,7 @@ impl CodeGenerationContext {
                 name,
                 var_type,
                 offset_bytes,
-                size_bytes
+                size_bytes,
             });
         }
         CodeGenerationContext {

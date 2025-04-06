@@ -1,4 +1,4 @@
-#[derive(Debug,PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum VarType {
     Float,
     Double,

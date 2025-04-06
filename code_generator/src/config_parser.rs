@@ -1,5 +1,5 @@
-use core::panic;
 use crate::var_type::VarType;
+use core::panic;
 
 use regex::Regex;
 
@@ -10,7 +10,7 @@ fn is_valid_name(name: &str) -> bool {
 
 pub struct VariableDefinition {
     pub name: String,
-    pub var_type: VarType
+    pub var_type: VarType,
 }
 
 impl VariableDefinition {
@@ -43,10 +43,7 @@ impl DataDefinition {
 }
 
 fn parse_type(type_definition: &str) -> VarType {
-    VarType::new(type_definition).expect(&format!(
-        "Invalid type definition: {}",
-        type_definition
-    ))
+    VarType::new(type_definition).expect(&format!("Invalid type definition: {}", type_definition))
 }
 
 fn parse_variable(variable_definition: &str) -> VariableDefinition {
@@ -64,7 +61,9 @@ fn parse_variable(variable_definition: &str) -> VariableDefinition {
 
 fn parse_data(data_definition: &str) -> DataDefinition {
     let re = Regex::new(r"(?m)(\w+)\s*\{([^}]*)\}").unwrap();
-    let caps = re.captures(data_definition).expect("Invalid data definition format");
+    let caps = re
+        .captures(data_definition)
+        .expect("Invalid data definition format");
     let name = caps.get(1).expect("Missing data name").as_str();
     let body = caps.get(2).expect("Missing data body").as_str().trim();
     if !is_valid_name(name) {
@@ -82,7 +81,7 @@ fn parse_data(data_definition: &str) -> DataDefinition {
         })
         .map(|line| parse_variable(line))
         .collect();
-    
+
     DataDefinition::new(name, variables).unwrap()
 }
 

@@ -1,6 +1,6 @@
+use code_generator::code_generation_main;
 use std::env::args;
 use std::path::Path;
-use code_generator::code_generation_main;
 
 fn main() {
     let args: Vec<String> = args().collect();

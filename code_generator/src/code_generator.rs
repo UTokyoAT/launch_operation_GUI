@@ -1,29 +1,48 @@
-use minijinja::{Environment, context, value::Value};
-use std::collections::HashMap;
 use crate::var_type::VarType;
+use minijinja::{context, value::Value, Environment};
+use std::collections::HashMap;
 
 use super::code_generation_context::{self, CodeGenerationContext};
 
-fn to_minijinja_value(code_generation_context: CodeGenerationContext, var_type_to_string : Box<dyn Fn(VarType) -> String>) -> Value {
+fn to_minijinja_value(
+    code_generation_context: CodeGenerationContext,
+    var_type_to_string: Box<dyn Fn(VarType) -> String>,
+) -> Value {
     let mut variable_information = Vec::new();
     for info in code_generation_context.variable_information {
         let var_info = HashMap::from([
             ("name".to_string(), Value::from(info.name)),
-            ("var_type".to_string(), Value::from(var_type_to_string(info.var_type))),
+            (
+                "var_type".to_string(),
+                Value::from(var_type_to_string(info.var_type)),
+            ),
             ("offset_bytes".to_string(), Value::from(info.offset_bytes)),
             ("size_bytes".to_string(), Value::from(info.size_bytes)),
         ]);
         variable_information.push(var_info);
     }
     let context = HashMap::from([
-        ("name".to_string(), Value::from(code_generation_context.name)),
-        ("variable_information".to_string(), Value::from(variable_information)),
-        ("total_bytes".to_string(), Value::from(code_generation_context.total_bytes)),
+        (
+            "name".to_string(),
+            Value::from(code_generation_context.name),
+        ),
+        (
+            "variable_information".to_string(),
+            Value::from(variable_information),
+        ),
+        (
+            "total_bytes".to_string(),
+            Value::from(code_generation_context.total_bytes),
+        ),
     ]);
     Value::from(context)
 }
 
-pub fn render_template(template: &str, var_type_to_string : Box<dyn Fn(VarType) -> String>, code_generation_context: CodeGenerationContext) -> String {
+pub fn render_template(
+    template: &str,
+    var_type_to_string: Box<dyn Fn(VarType) -> String>,
+    code_generation_context: CodeGenerationContext,
+) -> String {
     let context = to_minijinja_value(code_generation_context, var_type_to_string);
     let env = Environment::new();
     env.render_str(template, context).unwrap()
@@ -32,19 +51,17 @@ pub fn render_template(template: &str, var_type_to_string : Box<dyn Fn(VarType) 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::var_type::VarType;
-    use crate::code_generation_context::VariableInformation;
     use crate::code_generation_context::CodeGenerationContext;
+    use crate::code_generation_context::VariableInformation;
+    use crate::var_type::VarType;
 
     fn code_generation_context() -> CodeGenerationContext {
-        let variable_information = vec![
-            VariableInformation {
-                name: "var1".to_string(),
-                var_type: VarType::I8,
-                offset_bytes: 0,
-                size_bytes: 1,
-            },
-        ];
+        let variable_information = vec![VariableInformation {
+            name: "var1".to_string(),
+            var_type: VarType::I8,
+            offset_bytes: 0,
+            size_bytes: 1,
+        }];
         CodeGenerationContext {
             name: "TestData".to_string(),
             variable_information,
@@ -95,4 +112,3 @@ mod tests {
         assert!(rendered.contains("var1: i8"));
     }
 }
-
