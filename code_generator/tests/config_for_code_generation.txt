@@ -1,0 +1,8 @@
+Log {
+    float var1;
+    double var2;
+}
+
+Command {
+    u8 var1;
+}

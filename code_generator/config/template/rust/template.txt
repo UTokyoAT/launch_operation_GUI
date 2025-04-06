@@ -1,0 +1,62 @@
+use crate::traits::Sendable;
+
+pub struct {{name}} {
+    {% for variable in variable_information %}
+    {{variable.name}}: {{variable.var_type}},
+    {% endfor %}
+}
+
+impl Sendable for {{name}} {
+    fn serialize(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        {% for variable in variable_information %}
+        bytes.extend_from_slice(&self.{{variable.name}}.to_le_bytes());
+        {% endfor %}
+        bytes
+    }
+
+    fn deserialize(bytes: &Vec<u8>) -> Self {
+        {% for variable in variable_information %}
+        let {{variable.name}} = {{variable.var_type}}::from_le_bytes(
+            bytes[{{variable.offset_bytes}}..{{variable.offset_bytes}} + {{variable.size_bytes}}].try_into().unwrap(),
+        );
+        {% endfor %}
+        {{name}} {
+            {% for variable in variable_information %}
+            {{variable.name}},
+            {% endfor %}
+        }
+    }
+
+    fn serialized_size() -> usize {
+        {{total_bytes}}
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::traits::Sendable;
+    use rand::{self, Rng};
+
+    #[test]
+    fn test_reverse() {
+        let mut rng = rand::rng();
+        {% for variable in variable_information %}
+        let {{variable.name}}: {{variable.var_type}} = rng.random();
+        {% endfor %}
+        let data = {{name}} {
+            {% for variable in variable_information %}
+            {{variable.name}},
+            {% endfor %}
+        };
+        let serialized = data.serialize();
+        assert_eq!(serialized.len(), {{total_bytes}});
+        let deserialized = {{name}}::deserialize(&serialized);
+        {% for variable in variable_information %}
+        assert_eq!(data.{{variable.name}}, deserialized.{{variable.name}});
+        {% endfor %}
+
+    }
+}
+
