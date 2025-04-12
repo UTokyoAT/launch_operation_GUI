@@ -9,6 +9,6 @@ fn main() {
     }
     let config_path = args[1].clone();
     let config_path = Box::from(Path::new(&config_path));
-    let output_path = Box::from(Path::new("../launch_operation_GUI/src/generated_code"));
+    let output_path = Box::from(Path::new("../launch_operation_gui/src/generated_code"));
     code_generation_main::generate(config_path, output_path);
 }
