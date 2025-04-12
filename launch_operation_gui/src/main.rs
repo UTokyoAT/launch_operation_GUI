@@ -1,5 +1,5 @@
 use env_logger;
-use launch_operation_GUI::integration_test::integration_test;
+use launch_operation_gui::integration_test::integration_test;
 use std::env;
 use std::path::Path;
 fn main() {
