@@ -1769,7 +1769,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "launch_operation_GUI"
+name = "launch_operation_gui"
 version = "0.1.0"
 dependencies = [
  "env_logger",
