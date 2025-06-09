@@ -1,8 +1,7 @@
 #pragma once
 
-#include <cstdint>
-#include <vector>
-#include <cstring>
+#include <Arduino.h>
+#include <string.h>
 
 struct {{name}} {
     {% for variable in variable_information %}
@@ -11,26 +10,19 @@ struct {{name}} {
 
     {{name}}({% for variable in variable_information %} {{variable.var_type}} {{variable.name}}{% if not loop.last %}, {% endif %}{% endfor %}) :{% for variable in variable_information %} {{variable.name}}({{variable.name}}){% if not loop.last %}, {% endif %}{% endfor %} {}
 
-    std::vector<uint8_t> serialize() const {
-        std::vector<uint8_t> bytes;
-        bytes.reserve({{total_bytes}});
+    uint8_t* serialize() const {
+        uint8_t* bytes = new uint8_t[{{total_bytes}}];
         {% for variable in variable_information %}
-        {
-            {{variable.var_type}} value = {{variable.name}};
-            uint8_t* ptr = reinterpret_cast<uint8_t*>(&value);
-            bytes.insert(bytes.end(), ptr, ptr + sizeof({{variable.var_type}}));
-        }
+        const uint8_t* ptr_{{variable.name}} = reinterpret_cast<const uint8_t*>(&{{variable.name}});
+        memcpy(&bytes[{{variable.offset_bytes}}], ptr_{{variable.name}}, sizeof({{variable.var_type}}));
         {% endfor %}
         return bytes;
     }
 
-    static {{name}} deserialize(const std::vector<uint8_t>& bytes) {
-        if (bytes.size() != {{total_bytes}}) {
-            throw std::runtime_error("Invalid byte size for deserialization");
-        }
+    static {{name}} deserialize(const uint8_t* bytes) {
         {% for variable in variable_information %}
         {{variable.var_type}} {{variable.name}};
-        std::memcpy(&{{variable.name}}, &bytes[{{variable.offset_bytes}}], sizeof({{variable.var_type}}));
+        memcpy(&{{variable.name}}, &bytes[{{variable.offset_bytes}}], sizeof({{variable.var_type}}));
         {% endfor %}
         {{name}} result({% for variable in variable_information %}{{variable.name}}{% if not loop.last %}, {% endif %}{% endfor %});
         return result;
@@ -40,25 +32,3 @@ struct {{name}} {
         return {{total_bytes}};
     }
 };
-
-#ifdef TESTING
-#include <cassert>
-#include <random>
-
-void test_{{name}}() {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    {% for variable in variable_information %}
-    std::uniform_int_distribution<{{variable.var_type}}> dist_{{variable.name}};
-    {{variable.var_type}} {{variable.name}} = dist_{{variable.name}}(gen);
-    {% endfor %}
-
-    {{name}} data({% for variable in variable_information %}{{variable.name}}{% if not loop.last %}, {% endif %}{% endfor %});
-    auto serialized = data.serialize();
-    assert(serialized.size() == {{total_bytes}});
-    auto deserialized = {{name}}::deserialize(serialized);
-    {% for variable in variable_information %}
-    assert(data.{{variable.name}} == deserialized.{{variable.name}});
-    {% endfor %}
-}
-#endif 
