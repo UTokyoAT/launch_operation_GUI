@@ -18,6 +18,6 @@ fn main() {
     let mut receiver = SerialReceiver::new(port.clone(), 115200, Duration::from_secs(1));
     let received_log : Log = receiver.try_receive().unwrap();
 
-    assert_eq!(received_log.var1, 1.0);
-    assert_eq!(received_log.var2, 2.0);
+    assert_eq!(received_log.var1, 11.0);
+    assert_eq!(received_log.var2, 22.0);
 }

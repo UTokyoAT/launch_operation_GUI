@@ -24,7 +24,8 @@ void loop() {
 
     // 受信したデータをLogオブジェクトに変換
     Log received_log = Log::deserialize(received_bytes);
-
+    received_log.var1 += 10;
+    received_log.var2 += 20;
     // データを再度シリアライズして送信
     uint8_t* response_bytes = received_log.serialize();
     Serial.write(response_bytes, Log::serialized_size());
