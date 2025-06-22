@@ -3,7 +3,7 @@ use crate::traits::Sendable;
 #[derive(Debug)]
 pub struct {{name}} {
     {% for variable in variable_information %}
-    {{variable.name}}: {{variable.var_type}},
+    pub {{variable.name}}: {{variable.var_type}},
     {% endfor %}
 }
 
