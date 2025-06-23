@@ -6,57 +6,49 @@ use std::io::Error;
 use std::time::Duration;
 
 pub struct SerialSender {
-    port_name: String,
-    baut_rate: u32,
-    timeout: Duration,
+    port: Box<dyn serialport::SerialPort>,
 }
 
 impl SerialSender {
     pub fn new(port_name: String, baut_rate: u32, timeout: Duration) -> SerialSender {
+        let port = serialport::new(&port_name, baut_rate)
+            .timeout(timeout)
+            .open().unwrap();
         SerialSender {
-            port_name,
-            baut_rate,
-            timeout,
+            port
         }
     }
 }
 
 impl Sender<Error> for SerialSender {
     fn send<T: crate::traits::Sendable + Debug>(&mut self, data: T) -> Result<(), Error> {
-        let mut port = serialport::new(&self.port_name, self.baut_rate)
-            .timeout(self.timeout)
-            .open()?;
         log::info!("send data : {:?}", data);
         let output = data.serialize();
         log::info!("send data serialized : {:?}", output);
-        port.write(&output)?;
+        self.port.write(&output)?;
         Ok(())
     }
 }
 
 pub struct SerialReceiver {
-    port_name: String,
-    baut_rate: u32,
-    timeout: Duration,
+    port: Box<dyn serialport::SerialPort>,
 }
 
 impl SerialReceiver {
     pub fn new(port_name: String, baut_rate: u32, timeout: Duration) -> SerialReceiver {
+        let port = serialport::new(&port_name, baut_rate)
+            .timeout(timeout)
+            .open().unwrap();
         SerialReceiver {
-            port_name,
-            baut_rate,
-            timeout,
+            port
         }
     }
 }
 
 impl Receiver<Error> for SerialReceiver {
     fn try_receive<T: crate::traits::Sendable + Debug>(&mut self) -> Result<T, Error> {
-        let mut port = serialport::new(&self.port_name, self.baut_rate)
-            .timeout(self.timeout)
-            .open()?;
         let mut buf: Vec<u8> = vec![0; T::serialized_size()];
-        port.read(buf.as_mut_slice())?;
+        self.port.read(buf.as_mut_slice())?;
         log::info!("receive data serialized : {:?}", buf);
         let data = T::deserialize(&buf);
         log::info!("receive data : {:?}", data);
