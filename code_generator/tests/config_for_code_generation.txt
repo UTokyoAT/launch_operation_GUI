@@ -1,6 +1,6 @@
 Log {
     float var1;
-    double var2;
+    u32 var2;
 }
 
 Command {

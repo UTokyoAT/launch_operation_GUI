@@ -10,7 +10,7 @@ fn main() {
     println!("Enter the port name: ");
     let log = Log {
         var1: 1.0,
-        var2: 2.0,
+        var2: 2,
     };
     let mut port = String::new();
     io::stdin().read_line(&mut port).unwrap();
@@ -19,6 +19,6 @@ fn main() {
     sleep(Duration::from_millis(2000));
     sender.send(log).unwrap();
     let received_log : Log = receiver.try_receive().unwrap();
-    assert_eq!(received_log.var1, 1.0);
-    assert_eq!(received_log.var2, 2.0);
+    assert_eq!(received_log.var1, 11.0);
+    assert_eq!(received_log.var2, 22);
 }

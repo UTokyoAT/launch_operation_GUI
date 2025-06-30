@@ -5,7 +5,7 @@ pub struct Log {
     
     pub var1: f32,
     
-    pub var2: f64,
+    pub var2: u32,
     
 }
 
@@ -26,8 +26,8 @@ impl Sendable for Log {
             bytes[0..0 + 4].try_into().unwrap(),
         );
         
-        let var2 = f64::from_le_bytes(
-            bytes[4..4 + 8].try_into().unwrap(),
+        let var2 = u32::from_le_bytes(
+            bytes[4..4 + 4].try_into().unwrap(),
         );
         
         Log {
@@ -40,7 +40,7 @@ impl Sendable for Log {
     }
 
     fn serialized_size() -> usize {
-        12
+        8
     }
 }
 
@@ -56,7 +56,7 @@ mod tests {
         
         let var1: f32 = rng.random();
         
-        let var2: f64 = rng.random();
+        let var2: u32 = rng.random();
         
         let data = Log {
             
@@ -66,7 +66,7 @@ mod tests {
             
         };
         let serialized = data.serialize();
-        assert_eq!(serialized.len(), 12);
+        assert_eq!(serialized.len(), 8);
         let deserialized = Log::deserialize(&serialized);
         
         assert_eq!(data.var1, deserialized.var1);
