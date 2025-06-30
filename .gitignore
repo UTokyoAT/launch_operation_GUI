@@ -2,3 +2,4 @@ launch_operation_gui/target
 code_generator/target
 .DS_Store
 /launch_operation_gui/src/generated_code
+/test_arduino/test_serial_echo/target

@@ -6,69 +6,85 @@ use std::io::Error;
 use std::time::Duration;
 
 pub struct SerialSender {
-    port_name: String,
-    baut_rate: u32,
-    timeout: Duration,
+    port: Box<dyn serialport::SerialPort>,
 }
 
 impl SerialSender {
     pub fn new(port_name: String, baut_rate: u32, timeout: Duration) -> SerialSender {
+        let port = serialport::new(&port_name, baut_rate)
+            .timeout(timeout)
+            .open().unwrap();
         SerialSender {
-            port_name,
-            baut_rate,
-            timeout,
+            port
         }
     }
 }
 
 impl Sender<Error> for SerialSender {
     fn send<T: crate::traits::Sendable + Debug>(&mut self, data: T) -> Result<(), Error> {
-        let mut port = serialport::new(&self.port_name, self.baut_rate)
-            .timeout(self.timeout)
-            .open()?;
         log::info!("send data : {:?}", data);
         let output = data.serialize();
         log::info!("send data serialized : {:?}", output);
-        port.write(&output)?;
+        self.port.write(&output)?;
         Ok(())
     }
 }
 
 pub struct SerialReceiver {
-    port_name: String,
-    baut_rate: u32,
-    timeout: Duration,
+    port: Box<dyn serialport::SerialPort>,
 }
 
 impl SerialReceiver {
     pub fn new(port_name: String, baut_rate: u32, timeout: Duration) -> SerialReceiver {
+        let port = serialport::new(&port_name, baut_rate)
+            .timeout(timeout)
+            .open().unwrap();
         SerialReceiver {
-            port_name,
-            baut_rate,
-            timeout,
+            port
         }
     }
 }
 
 impl Receiver<Error> for SerialReceiver {
     fn try_receive<T: crate::traits::Sendable + Debug>(&mut self) -> Result<T, Error> {
-        let mut port = serialport::new(&self.port_name, self.baut_rate)
-            .timeout(self.timeout)
-            .open()?;
         let mut buf: Vec<u8> = vec![0; T::serialized_size()];
-        port.read(buf.as_mut_slice())?;
+        self.port.read(buf.as_mut_slice())?;
         log::info!("receive data serialized : {:?}", buf);
         let data = T::deserialize(&buf);
         log::info!("receive data : {:?}", data);
         Ok(data)
     }
 }
+
+pub fn new_pair(
+    port_name_sender: &str,
+    port_name_receiver: &str,
+    baut_rate: u32,
+    timeout: Duration,
+) -> Result<(SerialSender, SerialReceiver), serialport::Error> {
+
+    let port_sender = serialport::new(port_name_sender, baut_rate)
+        .timeout(timeout)
+        .open()?;
+    let sender = SerialSender {
+        port: port_sender,
+    };
+    let port_receiver = if port_name_receiver == port_name_sender {
+        sender.port.try_clone()?
+    } else {
+        serialport::new(port_name_receiver, baut_rate)
+            .timeout(timeout)
+            .open()?
+    };
+    let receiver = SerialReceiver { port: port_receiver };
+    Ok((sender, receiver))
+}
+
 #[cfg(test)]
 mod test {
     use crate::traits::{Receiver, Sendable, Sender};
     use std::{io, time::Duration};
 
-    use super::{SerialReceiver, SerialSender};
     #[derive(Debug)]
     struct TestData {
         x: u8,
@@ -99,8 +115,7 @@ mod test {
         io::stdin().read_line(&mut port_receive).unwrap();
         port_receive = String::from(port_receive.trim());
         //baut_rate=0はエラー回避のため(https://github.com/serialport/serialport-rs/pull/58)
-        let mut sender = SerialSender::new(port_send, 0, Duration::from_secs(1));
-        let mut receiver = SerialReceiver::new(port_receive, 0, Duration::from_secs(1));
+        let (mut sender, mut receiver) = super::new_pair(&port_send, &port_receive, 0, Duration::from_secs(1)).unwrap();
         sender.send(data).unwrap();
         let response: TestData = receiver.try_receive().unwrap();
         assert_eq!(response.x, 10);

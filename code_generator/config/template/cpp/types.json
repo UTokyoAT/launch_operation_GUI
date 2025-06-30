@@ -1,0 +1,13 @@
+{
+    "float_": "float",
+    "double_": "double",
+    "i8_": "int8_t",
+    "i16_": "int16_t",
+    "i32_": "int32_t",
+    "i64_": "int64_t",
+    "u8_": "uint8_t",
+    "u16_": "uint16_t",
+    "u32_": "uint32_t",
+    "u64_": "uint64_t",
+    "bool_": "bool"
+} 

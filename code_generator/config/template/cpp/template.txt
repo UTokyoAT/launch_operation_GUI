@@ -1,0 +1,34 @@
+#pragma once
+
+#include <Arduino.h>
+#include <string.h>
+
+struct {{name}} {
+    {% for variable in variable_information %}
+    {{variable.var_type}} {{variable.name}};
+    {% endfor %}
+
+    {{name}}({% for variable in variable_information %} {{variable.var_type}} {{variable.name}}{% if not loop.last %}, {% endif %}{% endfor %}) :{% for variable in variable_information %} {{variable.name}}({{variable.name}}){% if not loop.last %}, {% endif %}{% endfor %} {}
+
+    uint8_t* serialize() const {
+        uint8_t* bytes = new uint8_t[{{total_bytes}}];
+        {% for variable in variable_information %}
+        const uint8_t* ptr_{{variable.name}} = reinterpret_cast<const uint8_t*>(&{{variable.name}});
+        memcpy(&bytes[{{variable.offset_bytes}}], ptr_{{variable.name}}, sizeof({{variable.var_type}}));
+        {% endfor %}
+        return bytes;
+    }
+
+    static {{name}} deserialize(const uint8_t* bytes) {
+        {% for variable in variable_information %}
+        {{variable.var_type}} {{variable.name}};
+        memcpy(&{{variable.name}}, &bytes[{{variable.offset_bytes}}], sizeof({{variable.var_type}}));
+        {% endfor %}
+        {{name}} result({% for variable in variable_information %}{{variable.name}}{% if not loop.last %}, {% endif %}{% endfor %});
+        return result;
+    }
+
+    static constexpr size_t serialized_size() {
+        return {{total_bytes}};
+    }
+};

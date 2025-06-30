@@ -1,11 +1,11 @@
 use crate::{
     gui::gui,
     gui::gui::GUIComponent,
-    serial_communication::{SerialReceiver, SerialSender},
+    serial_communication,
     service::{ReceiveService, SendService},
     traits::Sendable,
 };
-use std::io;
+use std::{io, time::Duration};
 
 #[derive(Clone, Debug)]
 struct TestData {
@@ -50,8 +50,7 @@ pub fn integration_test() {
             text: String::from("0"),
         },
     ];
-    let sender = SerialSender::new(read_stdin(), 0, std::time::Duration::from_secs(1));
-    let receiver = SerialReceiver::new(read_stdin(), 0, std::time::Duration::from_millis(1));
+    let (sender, receiver) = serial_communication::new_pair("COM10", "COM11", 0, Duration::from_secs(1)).unwrap();
     let listener: Box<dyn FnMut(&TestData)> = Box::new(|data: &TestData| {
         println!("lister : {:?}", data);
     });
