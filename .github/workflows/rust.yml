@@ -23,7 +23,7 @@ jobs:
     - name: Run tests code_generator
       run: (cd code_generator; cargo test --verbose)
     - name: Run code_generator
-      run: (cd code_generator; cargo run tests/config_for_code_generation.txt)
+      run: (cd code_generator; cargo run tests/config_for_code_generation.txt ../launch_operation_gui/src/generated_code)
     - name: Build launch_operation_gui
       run: (cd launch_operation_gui; cargo build --verbose)
     - name: Run tests launch_operation_gui
