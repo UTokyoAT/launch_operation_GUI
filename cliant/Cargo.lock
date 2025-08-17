@@ -531,6 +531,7 @@ name = "cliant"
 version = "0.1.0"
 dependencies = [
  "launch_operation_gui",
+ "rand 0.9.2",
 ]
 
 [[package]]
