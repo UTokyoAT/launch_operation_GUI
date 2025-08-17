@@ -3,3 +3,5 @@ code_generator/target
 .DS_Store
 /launch_operation_gui/src/generated_code
 /test_arduino/test_serial_echo/target
+/cliant/src/generated_code
+/cliant/target

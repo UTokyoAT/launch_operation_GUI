@@ -1,4 +1,4 @@
-use crate::traits::Sendable;
+use launch_operation_gui::traits::Sendable;
 
 #[derive(Debug)]
 pub struct {{name}} {
@@ -37,7 +37,7 @@ impl Sendable for {{name}} {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::traits::Sendable;
+    use launch_operation_gui::traits::Sendable;
     use rand::{self, Rng};
 
     #[test]
