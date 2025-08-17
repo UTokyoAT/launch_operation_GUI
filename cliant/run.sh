@@ -10,9 +10,10 @@ echo "🚀 Running tests..."
 cargo test
 echo "✅ Test completed!"
 
-echo "🚀 Running cliant..."
-cargo run
-
+if [ $1!="-t" ]; then
+    echo "🚀 Running cliant..."
+    cargo run
+fi
 
 # 必要に応じてcliantも実行
 # echo "🚀 Running cliant..."
