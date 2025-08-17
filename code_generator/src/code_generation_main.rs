@@ -5,7 +5,19 @@ use crate::template_parser::{self, TypeToString};
 use std::fs;
 use std::fs::File;
 use std::io::BufReader;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+
+/// マニフェストディレクトリを取得するヘルパー関数
+fn get_manifest_dir() -> PathBuf {
+    std::env::var("CARGO_MANIFEST_DIR")
+        .map(PathBuf::from)
+        .unwrap()
+}
+
+/// プロジェクトルートからの相対パスを絶対パスに変換
+fn resolve_project_path<P: AsRef<Path>>(relative_path: P) -> PathBuf {
+    get_manifest_dir().join(relative_path)
+}
 
 fn sub_dir(path: &Path) -> Vec<String> {
     let mut sub_dirs = Vec::new();
@@ -21,7 +33,7 @@ fn sub_dir(path: &Path) -> Vec<String> {
 }
 
 pub fn generate(config_path: Box<Path>, output_path: Box<Path>) {
-    let template_path = Path::new("config/template");
+    let template_path = resolve_project_path("config/template");
     //config/template内にあるディレクトリを列挙
     let languages = sub_dir(&template_path);
     for language in languages {
