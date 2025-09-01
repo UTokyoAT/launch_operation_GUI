@@ -40,3 +40,27 @@ struct Log {
         return 8;
     }
 };
+
+struct LogSerialInterface {
+        static bool can_receive() {
+            return Serial.available() >= static_cast<int>(Log::serialized_size());
+        }
+
+        static Log receive() {
+            uint8_t received_bytes[Log::serialized_size()];
+            for (size_t i = 0; i < Log::serialized_size(); i++) {
+                while (!Serial.available()) {
+                    ; // データが利用可能になるのを待つ
+                }
+                received_bytes[i] = Serial.read();
+            }
+            return Log::deserialize(received_bytes);
+        }
+
+        static void send(Log data) {
+            uint8_t* response_bytes = data.serialize();
+            Serial.write(response_bytes, Log::serialized_size());
+            delete[] response_bytes;
+        }
+
+};

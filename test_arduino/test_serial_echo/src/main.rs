@@ -21,4 +21,5 @@ fn main() {
     let received_log : Log = receiver.try_receive().unwrap();
     assert_eq!(received_log.var1, 11.0);
     assert_eq!(received_log.var2, 22);
+    println!("Test passed");
 }
