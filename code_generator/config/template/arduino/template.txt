@@ -32,3 +32,28 @@ struct {{name}} {
         return {{total_bytes}};
     }
 };
+
+struct {{name}}SerialInterface {
+        static bool can_receive() {
+            return Serial.available() >= static_cast<int>({{name}}::serialized_size());
+        }
+
+        static {{name}} receive() {
+            uint8_t received_bytes[{{name}}::serialized_size()];
+            for (size_t i = 0; i < {{name}}::serialized_size(); i++) {
+                while (!Serial.available()) {
+                    ; // データが利用可能になるのを待つ
+                }
+                received_bytes[i] = Serial.read();
+            }
+            return {{name}}::deserialize(received_bytes);
+        }
+
+        static void send({{name}} data) {
+            uint8_t* response_bytes = data.serialize();
+            Serial.write(response_bytes, {{name}}::serialized_size());
+            delete[] response_bytes;
+        }
+
+};
+
