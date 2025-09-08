@@ -2,7 +2,7 @@ use crate::traits::{Receiver, Sender};
 use log;
 use serialport;
 use std::fmt::Debug;
-use std::io::Error;
+use std::io::{Error, ErrorKind};
 use std::time::Duration;
 
 pub struct SerialSender {
@@ -47,6 +47,9 @@ impl SerialReceiver {
 
 impl Receiver<Error> for SerialReceiver {
     fn try_receive<T: crate::traits::Sendable + Debug>(&mut self) -> Result<T, Error> {
+        if (self.port.bytes_to_read()? as usize) < T::serialized_size() {
+            return Err(Error::new(ErrorKind::Other, "Not enough data to receive"));
+        }
         let mut buf: Vec<u8> = vec![0; T::serialized_size()];
         self.port.read(buf.as_mut_slice())?;
         log::info!("receive data serialized : {:?}", buf);
