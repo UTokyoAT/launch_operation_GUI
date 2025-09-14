@@ -1,5 +1,5 @@
 use crate::traits::{Receiver, Sender};
-use log;
+use tracing;
 use std::fmt::Debug;
 use std::io::{Error, ErrorKind};
 use std::time::Duration;
@@ -25,9 +25,9 @@ impl SerialSender {
 #[async_trait]
 impl Sender for SerialSender {
     async fn send<T: crate::traits::Sendable + Debug + Send>(&mut self, data: T) -> Result<()> {
-        log::info!("send data : {:?}", data);
+        tracing::info!("send data : {:?}", data);
         let output = data.serialize();
-        log::info!("send data serialized : {:?}", output);
+        tracing::info!("send data serialized : {:?}", output);
         self.stream.write_all(&output).await?;
         Ok(())
     }
@@ -50,9 +50,9 @@ impl Receiver for SerialReceiver {
     async fn receive<T: crate::traits::Sendable + Debug + Send>(&mut self) -> Result<T> {
         let mut buf: Vec<u8> = vec![0; T::serialized_size()];
         self.stream.read_exact(&mut buf).await?;
-        log::info!("receive data serialized : {:?}", buf);
+        tracing::info!("receive data serialized : {:?}", buf);
         let data = T::deserialize(&buf);
-        log::info!("receive data : {:?}", data);
+        tracing::info!("receive data : {:?}", data);
         Ok(data)
     }
 }

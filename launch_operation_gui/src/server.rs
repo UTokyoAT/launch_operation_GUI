@@ -7,6 +7,8 @@ use crate::presentation::router::router;
 pub struct Server<T: Clone + Send + Sync + Sendable + Debug + serde::Serialize + 'static> {
     command_parser: CommandParser<T>,
 }
+use tracing_subscriber::EnvFilter;
+use tracing_subscriber::prelude::*;
 
 impl<T: Clone + Send + Sync + Sendable + Debug + serde::Serialize + 'static> Server<T> {
     pub fn new() -> Self {
@@ -20,6 +22,11 @@ impl<T: Clone + Send + Sync + Sendable + Debug + serde::Serialize + 'static> Ser
     }
 
     pub async fn run<S: Sender + Send + Sync + 'static, R: Receiver + Send + Sync + 'static>(self, sender: S, receiver: R) {
+
+        let _ = tracing_subscriber::registry()
+            .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
+            .with(tracing_subscriber::fmt::layer())
+            .try_init();
         let app_state = AppState::new(sender, receiver, self.command_parser, |_| {});
         let router = router(app_state);
         let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
