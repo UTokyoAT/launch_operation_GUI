@@ -5,19 +5,26 @@ use chrono::Utc;
 use crate::presentation::state::AppState;
 use axum::extract::State;
 use crate::presentation::error::InternalServerError;
+use tracing;
 
-pub async fn log_sender(ws: WebSocketUpgrade) -> impl IntoResponse {
-    ws.on_upgrade(handle_socket)
+pub async fn log_sender(ws: WebSocketUpgrade, State(state): State<AppState>) -> impl IntoResponse {
+    ws.on_upgrade(move |socket| handle_socket(socket, state))
 }
 
-async fn handle_socket(mut socket: WebSocket) {
+async fn handle_socket(mut socket: WebSocket, state: AppState) {
     loop {
-        sleep(Duration::from_millis(1)).await;
-        let date_time = Utc::now().to_string();
-        let result =socket.send(Message::Text(date_time.into())).await;
-        if let Err(_) = result {
-            println!("error");
-            break;
+        let result = (state.receive)().await;
+        match result {
+            Ok(data) => {
+                let result = socket.send(Message::Text(data.to_string().into())).await;
+                if let Err(e) = result {
+                    tracing::error!("websocket error: {}", e);
+                    break;
+                }
+            },
+            Err(e) => {
+                tracing::error!("receive error: {}", e);
+            }
         }
     }
 }

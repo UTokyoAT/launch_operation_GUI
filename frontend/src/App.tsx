@@ -26,7 +26,7 @@ function App() {
   }, [])
 
   const onClick = () => {
-    axios.post("http://localhost:8080/send", "test")
+    axios.post("http://localhost:8080/send", "data")
       .then((_) => {
         alert("送信しました")
       })
