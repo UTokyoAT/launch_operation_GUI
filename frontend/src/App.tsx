@@ -30,25 +30,23 @@ function App() {
   const onClick = () => {
     axios.post("http://localhost:8080/send", "data")
       .then((_) => {
-        alert("送信しました")
+        console.log("送信しました")
       })
       .catch((error) => {
-        alert("送信に失敗しました" +error)
+        console.log("送信に失敗しました" +error)
       })
   }
 
   return (
     <>
-      <h1 className="text-3xl font-bold underline">
-        Hello world!
-      </h1>
-      <div className="carousel bg-primary">
+      <div className="carousel">
         {logs.map((log) => (
-          <div className="carousel-item card bg-secondary">
+          <div className="carousel-item card bg-secondary m-5">
             <LogView key={log.name} {...log} />
           </div>
         ))}
       </div>
+      <br />
       <button className="btn btn-primary" onClick={onClick}>
         送信
       </button>
