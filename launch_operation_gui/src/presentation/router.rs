@@ -12,6 +12,7 @@ use tower_http::trace::DefaultOnFailure;
 
 pub fn router(state: AppState) -> Router {
     Router::new()
+        .route("/accept_names", get(handler::get_accept_names))
         .route("/log", get(handler::log_sender))
         .route("/send", post(handler::send_command))
         .layer(

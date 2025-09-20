@@ -5,12 +5,21 @@ import axios from 'axios'
 import './App.css'
 import type { Log } from './Log'
 import LogView from './LogView'
-
+import Button from './Button'
 function App() {
   const [logs, setLogs] = useState<Log[]>([]);
+  const [acceptNames, setAcceptNames] = useState<string[]>([]);
   const socketRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
+    axios.get("http://localhost:8080/accept_names")
+      .then((response) => {
+        setAcceptNames(response.data)
+      })
+      .catch((error) => {
+        console.error("取得に失敗しました" +error)
+      })
+
     const websocket = new WebSocket("ws://localhost:8080/log")
     socketRef.current = websocket
 
@@ -27,16 +36,6 @@ function App() {
     }
   }, [])
 
-  const onClick = () => {
-    axios.post("http://localhost:8080/send", "data")
-      .then((_) => {
-        console.log("送信しました")
-      })
-      .catch((error) => {
-        console.log("送信に失敗しました" +error)
-      })
-  }
-
   return (
     <>
       <div className="carousel">
@@ -47,9 +46,9 @@ function App() {
         ))}
       </div>
       <br />
-      <button className="btn btn-primary" onClick={onClick}>
-        送信
-      </button>
+      {acceptNames.map((name) => (
+        <Button name={name} />
+      ))}
     </>
   )
 }

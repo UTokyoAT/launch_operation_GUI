@@ -16,10 +16,11 @@ use tokio::sync::Mutex;
 pub struct AppState {
     pub send: Arc<dyn Fn(String) -> Pin<Box<dyn Future<Output = Result<()>> + Send>> + Send + Sync>,
     pub receive: Arc<dyn Fn() -> Pin<Box<dyn Future<Output = Result<Json<Value>>> + Send>> + Send + Sync>,
+    pub accept_names: Vec<String>,
 }
 
 impl AppState {
-    pub fn new<S: Sender + Send + Sync + 'static, R: Receiver + Send + Sync + 'static, T: Clone + Send + Sync + Sendable + Debug + serde::Serialize + 'static, F: Fn(T) + Send + Sync + 'static>(sender: S, receiver: R, command_parser: CommandParser<T>, on_receive: F) -> AppState {
+    pub fn new<S: Sender + Send + Sync + 'static, R: Receiver + Send + Sync + 'static, T: Clone + Send + Sync + Sendable + Debug + serde::Serialize + 'static, F: Fn(T) + Send + Sync + 'static>(sender: S, receiver: R, command_parser: CommandParser<T>, on_receive: F, accept_names: Vec<String>) -> AppState {
         let send_service = Arc::new(Mutex::new(SendService::new(command_parser, sender)));
         let receive_service = Arc::new(Mutex::new(ReceiveService::new(on_receive, receiver)));
 
@@ -41,6 +42,7 @@ impl AppState {
                     Ok(Json(serde_json::to_value(data)?))
                 })
             }),
+            accept_names,
         }
     }
 }

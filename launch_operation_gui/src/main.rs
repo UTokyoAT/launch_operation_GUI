@@ -28,7 +28,8 @@ impl Sendable for Data {
 
 #[tokio::main]
 async fn main() {
-    let data = Data { data: 10, data2: 20 };
+    let data1 = Data { data: 10, data2: 20 };
+    let data2 = Data { data: 30, data2: 40 };
     let (sender, receiver) = serial_communication::new_pair_mock().unwrap();
-    Server::new().add_command("data", data).run(sender, receiver).await;
+    Server::new().add_command("data1", data1).add_command("data2", data2).run(sender, receiver).await;
 }

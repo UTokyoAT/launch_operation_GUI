@@ -1,5 +1,6 @@
 use axum::extract::ws::{WebSocket, Message, WebSocketUpgrade};
 use axum::response::IntoResponse;
+use axum::Json;
 use crate::presentation::state::AppState;
 use axum::extract::State;
 use crate::presentation::error::InternalServerError;
@@ -30,4 +31,8 @@ async fn handle_socket(mut socket: WebSocket, state: AppState) {
 pub async fn send_command(State(state): State<AppState>, body: String) -> Result<impl IntoResponse, InternalServerError> {
     (state.send)(body).await?;
     Ok("Command sent successfully")
+}
+
+pub async fn get_accept_names(State(state): State<AppState>) -> impl IntoResponse {
+    Json(state.accept_names)
 }

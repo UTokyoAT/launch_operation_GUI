@@ -27,7 +27,8 @@ impl<T: Clone + Send + Sync + Sendable + Debug + serde::Serialize + 'static> Ser
             .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
             .with(tracing_subscriber::fmt::layer())
             .try_init();
-        let app_state = AppState::new(sender, receiver, self.command_parser, |_| {});
+        let accept_names = self.command_parser.accept_names();
+        let app_state = AppState::new(sender, receiver, self.command_parser, |_| {}, accept_names);
         let router = router(app_state);
         let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
         println!("Server is running on http://localhost:8080");
