@@ -1,4 +1,6 @@
 use std::fmt::Debug;
+use async_trait::async_trait;
+use anyhow::Result;
 ///通信によって送受信される型に実装するトレイト
 pub trait Sendable {
     ///バイナリに変換する
@@ -9,13 +11,14 @@ pub trait Sendable {
     fn serialized_size() -> usize;
 }
 
+#[async_trait]
 ///データを送信する型に実装するトレイト
-pub trait Sender<E> {
-    fn send<T: Sendable + Debug>(&mut self, data: T) -> Result<(), E>;
+pub trait Sender {
+    async fn send<T: Sendable + Debug + Send>(&mut self, data: T) -> Result<()>;
 }
 
+#[async_trait]
 ///データを受信する型に実装するトレイト
-pub trait Receiver<E> {
-    ///データを受信していればそのデータを，していなければエラーを返す
-    fn try_receive<T: Sendable + Debug>(&mut self) -> Result<T, E>;
+pub trait Receiver {
+    async fn receive<T: Sendable + Debug + Send>(&mut self) -> Result<T>;
 }
